@@ -11,7 +11,7 @@
 #import <React/RCTUtils.h>
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
-
+#import <React/RCTBridgeModule.h>
 #import <objc/runtime.h>
 
 // runtime trick to remove WKWebView keyboard default toolbar
@@ -24,7 +24,7 @@
 }
 @end
 
-@interface CRAWKWebView () <WKNavigationDelegate, RCTAutoInsetsProtocol, WKScriptMessageHandler, WKUIDelegate, UIScrollViewDelegate>
+@interface CRAWKWebView () <WKNavigationDelegate, RCTAutoInsetsProtocol, WKScriptMessageHandler, WKUIDelegate, UIScrollViewDelegate, RCTBridgeModule>
 
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingStart;
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingFinish;
@@ -37,7 +37,6 @@
 @property (assign) BOOL sendCookies;
 @property (nonatomic, strong) WKUserScript *atStartScript;
 @property (nonatomic, strong) WKUserScript *atEndScript;
-@property (nonatomic, copy) RCTDirectEventBlock onContentProcessDidTerminate;
 
 @end
 
@@ -49,6 +48,9 @@
   NSString *_injectJavaScript;
   NSString *_injectedJavaScript;
 }
+RCT_EXPORT_MODULE(CRAWKWebView);
+
+static BOOL isDidTerminate = NO;
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -608,10 +610,14 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView
 {
   RCTLogWarn(@"Webview Process Terminated");
-  if (_onContentProcessDidTerminate) {
-    NSMutableDictionary<NSString *, id> *event = [self baseEvent];
-    _onContentProcessDidTerminate(event);
-  }
+  isDidTerminate = YES;
+}
+
+RCT_EXPORT_METHOD(isWebViewDidTerminate:(RCTPromiseResolveBlock)resolve
+                  rejecter:(__unused RCTPromiseRejectBlock)reject) {
+//  RCTLogWarn(@"FISH TEST isWebViewDidTerminate");
+  NSString *rtnString = isDidTerminate ? @"YES" : @"NO";
+  resolve(rtnString);
 }
 
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {
