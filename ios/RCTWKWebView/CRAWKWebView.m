@@ -620,6 +620,12 @@ RCT_EXPORT_METHOD(isWebViewDidTerminate:(RCTPromiseResolveBlock)resolve
   resolve(rtnString);
 }
 
+RCT_EXPORT_METHOD(setIsDidTernimate:(BOOL *)pIsDidTerminate) {
+  isDidTerminate = pIsDidTerminate;
+//  NSString *rtnString = isDidTerminate ? @"YES" : @"NO";
+//  NSLog(@"setIsDidTernimate and value is %@",rtnString);
+}
+
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {
   if (_onNavigationResponse) {
     NSDictionary *headers = @{};
